@@ -5,14 +5,31 @@ let db: SQLite.SQLiteDatabase | null = null;
 
 // 初始化数据库
 export async function initDatabase(): Promise<SQLite.SQLiteDatabase> {
+  // 检查是否在客户端（浏览器）环境中
+  const isClient = typeof window !== 'undefined' && typeof document !== 'undefined';
+  
+  // 在服务端渲染时，返回一个模拟数据库
+  if (!isClient) {
+    console.log('Running on server - skipping database initialization');
+    // 返回一个Promise，但不实际初始化数据库
+    return {} as SQLite.SQLiteDatabase;
+  }
+  
   if (db) return db;
   
-  db = await SQLite.openDatabaseAsync('billing.db');
+  // 检查是否在Web平台上
+  if (isClient) {
+    console.log('Running on Web platform - using simulated database');
+    // 使用模拟数据库实现
+    db = await SQLite.openDatabaseAsync('billing.db');
+  } else {
+    // 在原生平台上正常初始化
+    db = await SQLite.openDatabaseAsync('billing.db');
+  }
   
   // 创建表
   await db.execAsync(CREATE_ACCOUNTS_TABLE);
   await db.execAsync(CREATE_TRANSACTIONS_TABLE);
-  
   return db;
 }
 
@@ -225,4 +242,3 @@ export async function getCategorySummary(type: 'income' | 'expense', startDate?:
   
   return database.getAllAsync<{ category: string; category_icon: string; total: number }>(sql, params);
 }
-
