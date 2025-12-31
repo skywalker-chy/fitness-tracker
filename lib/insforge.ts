@@ -8,14 +8,14 @@ console.log('使用 InsForge 客户端（直接 HTTP API）');
 console.log('连接到:', baseUrl);
 
 // 模拟数据（当 API 不可用时使用）
-const mockTables = [{ name: 'accounts' }, { name: 'transactions' }];
-let mockAccounts = [
-  { id: 1, name: '现金', balance: 1000.00, icon: '💰', color: '#FFD700', created_at: new Date().toISOString() },
-  { id: 2, name: '银行卡', balance: 5000.00, icon: '💳', color: '#1E90FF', created_at: new Date().toISOString() },
-  { id: 3, name: '支付宝', balance: 3000.00, icon: '📱', color: '#00A0E9', created_at: new Date().toISOString() }
+const mockTables = [{ name: 'plan' }, { name: 'transactions' }, { name: 'users' }];
+let mockPlans = [
+  { id: 1, name: '跑步', balance: 0, icon: '🏃', color: '#FF6B6B', created_at: new Date().toISOString() },
+  { id: 2, name: '力量训练', balance: 0, icon: '�', color: '#4ECDC4', created_at: new Date().toISOString() },
+  { id: 3, name: '游泳', balance: 0, icon: '🏊', color: '#45B7D1', created_at: new Date().toISOString() }
 ];
-let mockTransactions = [];
-let nextAccountId = 4;
+let mockTransactions: any[] = [];
+let nextPlanId = 4;
 let nextTransactionId = 1;
 
 // 实现基于 HTTP 的数据库客户端
@@ -63,10 +63,10 @@ class InsForgeDatabaseClient {
   async checkTables() {
     try {
       console.log('检查表列表...');
-      // PostgREST API 通常不提供表列表的直接端点，我们尝试检查表是否存在
-      await this.request(`/accounts`);
-      console.log('accounts 表存在');
-      return [{ name: 'accounts' }];
+      // 尝试检查 plan 表是否存在
+      await this.request(`/plan`);
+      console.log('plan 表存在');
+      return [{ name: 'plan' }];
     } catch (error) {
       console.error('检查表列表失败:', error);
       
