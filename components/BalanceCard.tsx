@@ -1,8 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { TrendingUp, TrendingDown } from 'lucide-react-native';
-import { formatCurrency } from '@/utils/format';
+import { Timer, Flame } from 'lucide-react-native';
 
 interface BalanceCardProps {
   totalBalance: number;
@@ -13,29 +12,29 @@ interface BalanceCardProps {
 export function BalanceCard({ totalBalance, income, expense }: BalanceCardProps) {
   return (
     <LinearGradient
-      colors={['#C084FC', '#818CF8', '#60A5FA']}
+      colors={['#34D399', '#10B981', '#059669']}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.card}
     >
-      <Text style={styles.label}>总余额</Text>
-      <Text style={styles.amount}>{formatCurrency(totalBalance)}</Text>
+      <Text style={styles.label}>本周运动总时长</Text>
+      <Text style={styles.amount}>{totalBalance} 分钟</Text>
       
       <View style={styles.details}>
         <View style={styles.detailItem}>
           <View style={styles.iconWrap}>
-            <TrendingUp size={16} color="#4CAF50" />
+            <Timer size={16} color="#10B981" />
           </View>
-          <Text style={styles.detailLabel}>收入</Text>
-          <Text style={styles.detailAmount}>{formatCurrency(income)}</Text>
+          <Text style={styles.detailLabel}>训练次数</Text>
+          <Text style={styles.detailAmount}>{income} 次</Text>
         </View>
         
         <View style={styles.detailItem}>
           <View style={styles.iconWrap}>
-            <TrendingDown size={16} color="#FF5722" />
+            <Flame size={16} color="#F97316" />
           </View>
-          <Text style={styles.detailLabel}>支出</Text>
-          <Text style={styles.detailAmount}>{formatCurrency(expense)}</Text>
+          <Text style={styles.detailLabel}>消耗热量</Text>
+          <Text style={styles.detailAmount}>{expense} 千卡</Text>
         </View>
       </View>
     </LinearGradient>

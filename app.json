@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "bill-main",
-    "slug": "bill-main",
+    "name": "健身记录助手",
+    "slug": "fitness-tracker",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "billmain",
+    "scheme": "fitnesstracker",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {

@@ -41,6 +41,9 @@ const MAPPING = {
   'house': 'home',
   'bolt.fill': 'flash-on',
   'paintbrush.fill': 'brush',
+  // 健身APP新增图标
+  'brain': 'psychology',
+  'target': 'track-changes',
 } as IconMapping;
 
 /**

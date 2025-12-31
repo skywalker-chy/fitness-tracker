@@ -22,7 +22,20 @@ export default function StatsScreen() {
   const colors = Colors[colorScheme ?? 'light'];
   const [selectedPeriod, setSelectedPeriod] = useState(0);
 
-  const { income, expense, categorySummary, fetchSummary, fetchCategorySummary } = useTransactionStore();
+  const { expense, categorySummary, fetchSummary, fetchCategorySummary } = useTransactionStore();
+
+  useEffect(() => {
+    const period = periods[selectedPeriod].value;
+    fetchSummary(period);
+    fetchCategorySummary('expense', period);
+  }, [selectedPeriod]);
+
+  // 训练次数 = 分类数量（每个分类代表一种运动的记录）
+  const workoutCount = categorySummary.length;
+  // 运动总时长
+  const totalMinutes = expense || 0;
+  // 估算消耗热量
+  const caloriesBurned = Math.round(totalMinutes * 5);
 
   useEffect(() => {
     const period = periods[selectedPeriod].value;
@@ -34,7 +47,7 @@ export default function StatsScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>收支分析</Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>运动分析</Text>
           <Text style={[styles.title, { color: colors.text }]}>统计</Text>
         </View>
 
@@ -53,12 +66,12 @@ export default function StatsScreen() {
         <View style={[styles.summaryCard, { backgroundColor: colors.card }]}>
           <View style={styles.summaryRow}>
             <View>
-              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>本期收入</Text>
-              <Text style={[styles.summaryAmount, { color: colors.income }]}>¥{income.toFixed(2)}</Text>
+              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>运动类型</Text>
+              <Text style={[styles.summaryAmount, { color: colors.income }]}>{workoutCount} 种</Text>
             </View>
             <View style={{ alignItems: 'flex-end' }}>
-              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>本期支出</Text>
-              <Text style={[styles.summaryAmount, { color: colors.expense }]}>¥{expense.toFixed(2)}</Text>
+              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>运动时长</Text>
+              <Text style={[styles.summaryAmount, { color: colors.expense }]}>{totalMinutes} 分钟</Text>
             </View>
           </View>
 
@@ -66,7 +79,7 @@ export default function StatsScreen() {
             <View style={styles.chartContainer}>
               <View style={styles.pieChart}>
                 {categorySummary.map((item, index) => (
-                  <View key={index} style={[styles.pieSlice, { backgroundColor: getCategoryColor(item.category), width: `${item.percent}%` }]} />
+                  <View key={index} style={[styles.pieSlice, { backgroundColor: getCategoryColor(item.category), width: `${item.percent || 0}%` }]} />
                 ))}
               </View>
               <View style={styles.legendContainer}>
@@ -74,20 +87,20 @@ export default function StatsScreen() {
                   <View key={index} style={styles.legendItem}>
                     <View style={[styles.legendDot, { backgroundColor: getCategoryColor(item.category) }]} />
                     <Text style={[styles.legendText, { color: colors.text }]}>{item.category}</Text>
-                    <Text style={[styles.legendAmount, { color: colors.textSecondary }]}>¥{item.total.toFixed(2)}</Text>
+                    <Text style={[styles.legendAmount, { color: colors.textSecondary }]}>{item.total ?? 0} 分钟</Text>
                   </View>
                 ))}
               </View>
             </View>
           ) : (
             <View style={styles.emptyChart}>
-              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>当前周期暂无支出数据</Text>
+              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>当前周期暂无运动数据</Text>
             </View>
           )}
         </View>
 
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>详细账单</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>运动详情</Text>
           <View style={[styles.billList, { backgroundColor: colors.card }]}>
             {categorySummary.length > 0 ? categorySummary.map((item, index) => (
               <View key={index} style={styles.billItem}>
@@ -96,9 +109,9 @@ export default function StatsScreen() {
                 </View>
                 <View style={styles.billInfo}>
                   <Text style={[styles.billCategory, { color: colors.text }]}>{item.category}</Text>
-                  <Text style={[styles.billPercent, { color: colors.textSecondary }]}>{item.percent}%</Text>
+                  <Text style={[styles.billPercent, { color: colors.textSecondary }]}>{item.percent ?? 0}%</Text>
                 </View>
-                <Text style={[styles.billAmount, { color: colors.expense }]}>-¥{item.total.toFixed(2)}</Text>
+                <Text style={[styles.billAmount, { color: colors.primary }]}>{item.total ?? 0} 分钟</Text>
               </View>
             )) : (
               <View style={styles.emptyState}>

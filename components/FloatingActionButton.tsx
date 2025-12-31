@@ -30,9 +30,9 @@ export function FloatingActionButton({
 
   const actions: FABAction[] = [
     { icon: Camera, label: '拍照识别', color: '#FBBF24', onPress: onCameraInput || (() => {}) },
-    { icon: Mic, label: '语音记账', color: '#34D399', onPress: onVoiceInput || (() => {}) },
+    { icon: Mic, label: '语音记录', color: '#34D399', onPress: onVoiceInput || (() => {}) },
     { icon: Edit3, label: '快速输入', color: '#60A5FA', onPress: onQuickInput || (() => {}) },
-    { icon: FileText, label: '记一笔', color: '#F472B6', onPress: onAddTransaction || (() => {}) },
+    { icon: FileText, label: '记录运动', color: '#F472B6', onPress: onAddTransaction || (() => {}) },
   ];
 
   const toggleMenu = () => setIsOpen(!isOpen);

@@ -4,9 +4,8 @@ import { Colors } from '@/constants/theme';
 import { Account } from '@/db/sqlite/schema';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useAccountStore } from '@/store/useAccountStore';
-import { formatCurrency } from '@/utils/format';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { Plus, Wallet } from 'lucide-react-native';
+import { Plus, Target } from 'lucide-react-native';
 import React, { useCallback } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -39,27 +38,27 @@ export default function WalletScreen() {
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <View>
-            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>资产概览</Text>
-            <Text style={[styles.title, { color: colors.text }]}>钱包</Text>
+            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>健身目标</Text>
+            <Text style={[styles.title, { color: colors.text }]}>训练计划</Text>
           </View>
           <TouchableOpacity style={[styles.addButton, { backgroundColor: colors.primaryLight }]} onPress={handleAddAccount}>
             <Plus size={16} color={colors.primary} />
-            <Text style={[styles.addButtonText, { color: colors.primary }]}>添加账户</Text>
+            <Text style={[styles.addButtonText, { color: colors.primary }]}>添加计划</Text>
           </TouchableOpacity>
         </View>
 
         <View style={[styles.balanceCard, { backgroundColor: colors.card }]}>
           <View style={styles.balanceHeader}>
             <View style={[styles.walletIconWrap, { backgroundColor: colors.primaryLight }]}>
-              <Wallet size={24} color={colors.primary} />
+              <Target size={24} color={colors.primary} />
             </View>
             <View style={styles.balanceInfo}>
-              <Text style={[styles.balanceLabel, { color: colors.textSecondary }]}>总余额</Text>
-              <Text style={[styles.balanceAmount, { color: colors.text }]}>{formatCurrency(totalBalance)}</Text>
+              <Text style={[styles.balanceLabel, { color: colors.textSecondary }]}>本周目标</Text>
+              <Text style={[styles.balanceAmount, { color: colors.text }]}>{totalBalance} 分钟</Text>
             </View>
           </View>
           <Text style={[styles.accountInfo, { color: colors.textSecondary }]}>
-            共 {accounts.length} 个账户，支持现金、银行卡、信用卡等多种类型。
+            共 {accounts.length} 个训练计划，支持跑步、力量训练、瑜伽等多种运动类型。
           </Text>
         </View>
 
@@ -76,7 +75,7 @@ export default function WalletScreen() {
           </View>
         ) : (
           <View style={styles.emptyWrap}>
-            <EmptyState emoji="👆" title="还没有账户" description="点击上方按钮添加第一个账户" />
+            <EmptyState emoji="🎯" title="还没有训练计划" description="点击上方按钮添加第一个健身计划" />
           </View>
         )}
       </ScrollView>

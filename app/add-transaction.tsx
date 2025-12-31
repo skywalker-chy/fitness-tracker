@@ -16,7 +16,7 @@ export default function AddTransactionScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const router = useRouter();
-  const { id } = useLocalSearchParams<{ id?: string }>();
+  const { id, prefill } = useLocalSearchParams<{ id?: string; prefill?: string }>();
   const isEditMode = !!id;
 
   const { accounts, fetchAccounts } = useAccountStore();
@@ -31,17 +31,36 @@ export default function AddTransactionScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [originalDate, setOriginalDate] = useState<string | null>(null);
 
-  // 加载账户数据
+  // 加载训练计划数据
   useEffect(() => { fetchAccounts(); }, []);
 
-  // 编辑模式下加载交易数据
+  // 处理 AI 识别预填数据
+  useEffect(() => {
+    if (prefill && !isEditMode) {
+      try {
+        const data = JSON.parse(prefill);
+        if (data.type) setType(data.type);
+        if (data.amount) setAmount(data.amount);
+        if (data.description) setDescription(data.description);
+        if (data.category) {
+          const categories = data.type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
+          const category = categories.find(c => c.name === data.category);
+          if (category) setSelectedCategory(category);
+        }
+      } catch (error) {
+        console.error('[AddWorkout] Parse prefill error:', error);
+      }
+    }
+  }, [prefill]);
+
+  // 编辑模式下加载运动记录数据
   useEffect(() => {
     if (isEditMode && id) {
       loadTransaction(parseInt(id));
     }
   }, [id]);
 
-  // 仅在新建模式下自动选择第一个账户
+  // 仅在新建模式下自动选择第一个训练计划
   useEffect(() => {
     if (accounts.length > 0 && !selectedAccountId && !isEditMode) {
       setSelectedAccountId(accounts[0].id);
@@ -72,7 +91,7 @@ export default function AddTransactionScreen() {
         setSelectedCategory(category);
       }
     } catch (error) {
-      Alert.alert('错误', '加载交易记录失败');
+      Alert.alert('错误', '加载运动记录失败');
     } finally {
       setIsLoading(false);
     }
@@ -80,11 +99,18 @@ export default function AddTransactionScreen() {
 
   const handleSave = async () => {
     if (!amount || parseFloat(amount) <= 0) {
-      Alert.alert('提示', '请输入有效金额');
+      Alert.alert('提示', '请输入有效时长');
       return;
     }
     if (!selectedAccountId) {
-      Alert.alert('提示', '请选择账户');
+      Alert.alert(
+        '提示', 
+        '请先创建一个训练计划',
+        [
+          { text: '取消', style: 'cancel' },
+          { text: '去创建', onPress: () => router.push('/add-account') }
+        ]
+      );
       return;
     }
 
@@ -110,8 +136,10 @@ export default function AddTransactionScreen() {
           description: description || selectedCategory.name
         });
       }
-      router.back();
+      // 使用 replace 跳转到首页，避免返回到 index 触发认证检查
+      router.replace('/(tabs)');
     } catch (error) {
+      console.error('[AddTransaction] Save error:', error);
       Alert.alert('错误', isEditMode ? '更新失败' : '保存失败');
     }
   };
@@ -122,7 +150,7 @@ export default function AddTransactionScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}><X size={24} color={colors.text} /></TouchableOpacity>
-        <Text style={[styles.title, { color: colors.text }]}>{isEditMode ? '编辑交易' : '记一笔'}</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{isEditMode ? '编辑记录' : '记录运动'}</Text>
         <TouchableOpacity onPress={handleSave} disabled={isLoading}>
           <Text style={[styles.saveBtn, { color: isLoading ? colors.textSecondary : colors.primary }]}>
             {isLoading ? '加载中...' : '保存'}
@@ -131,18 +159,18 @@ export default function AddTransactionScreen() {
       </View>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.typeSelector}>
-          <TouchableOpacity style={[styles.typeBtn, type === 'expense' && { backgroundColor: colors.expense }]} onPress={() => setType('expense')}>
-            <Text style={[styles.typeText, { color: type === 'expense' ? '#FFF' : colors.textSecondary }]}>支出</Text>
+          <TouchableOpacity style={[styles.typeBtn, type === 'expense' && { backgroundColor: colors.primary }]} onPress={() => setType('expense')}>
+            <Text style={[styles.typeText, { color: type === 'expense' ? '#FFF' : colors.textSecondary }]}>运动类型</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.typeBtn, type === 'income' && { backgroundColor: colors.income }]} onPress={() => setType('income')}>
-            <Text style={[styles.typeText, { color: type === 'income' ? '#FFF' : colors.textSecondary }]}>收入</Text>
+            <Text style={[styles.typeText, { color: type === 'income' ? '#FFF' : colors.textSecondary }]}>训练部位</Text>
           </TouchableOpacity>
         </View>
         <View style={[styles.amountCard, { backgroundColor: colors.card }]}>
-          <Text style={[styles.amountLabel, { color: colors.textSecondary }]}>金额</Text>
+          <Text style={[styles.amountLabel, { color: colors.textSecondary }]}>运动时长（分钟）</Text>
           <View style={styles.amountRow}>
-            <Text style={[styles.currency, { color: type === 'expense' ? colors.expense : colors.income }]}>¥</Text>
-            <TextInput style={[styles.amountInput, { color: colors.text }]} placeholder="0.00" placeholderTextColor={colors.textSecondary} keyboardType="decimal-pad" value={amount} onChangeText={setAmount} />
+            <Text style={[styles.currency, { color: colors.primary }]}>⏱</Text>
+            <TextInput style={[styles.amountInput, { color: colors.text }]} placeholder="0" placeholderTextColor={colors.textSecondary} keyboardType="decimal-pad" value={amount} onChangeText={setAmount} />
           </View>
         </View>
         <View style={[styles.section, { backgroundColor: colors.card }]}>
@@ -150,9 +178,9 @@ export default function AddTransactionScreen() {
           <CategoryPicker type={type} selectedCategory={selectedCategory.name} onSelect={(cat) => setSelectedCategory(cat)} />
         </View>
         <TouchableOpacity style={[styles.accountSelector, { backgroundColor: colors.card }]} onPress={() => setShowAccountPicker(!showAccountPicker)}>
-          <Text style={[styles.accountLabel, { color: colors.textSecondary }]}>账户</Text>
+          <Text style={[styles.accountLabel, { color: colors.textSecondary }]}>训练计划</Text>
           <View style={styles.accountValue}>
-            <Text style={[styles.accountName, { color: colors.text }]}>{selectedAccount?.name || '选择账户'}</Text>
+            <Text style={[styles.accountName, { color: colors.text }]}>{selectedAccount?.name || '选择计划'}</Text>
             <ChevronDown size={20} color={colors.textSecondary} />
           </View>
         </TouchableOpacity>
@@ -167,7 +195,7 @@ export default function AddTransactionScreen() {
         )}
         <View style={[styles.section, { backgroundColor: colors.card }]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>备注</Text>
-          <TextInput style={[styles.descInput, { color: colors.text, borderColor: colors.border }]} placeholder="添加备注..." placeholderTextColor={colors.textSecondary} value={description} onChangeText={setDescription} />
+          <TextInput style={[styles.descInput, { color: colors.text, borderColor: colors.border }]} placeholder="添加运动备注..." placeholderTextColor={colors.textSecondary} value={description} onChangeText={setDescription} />
         </View>
       </ScrollView>
     </SafeAreaView>

@@ -2,29 +2,35 @@ import { format, formatDistanceToNow, isToday, isYesterday, parseISO } from 'dat
 import { zhCN } from 'date-fns/locale';
 
 /**
- * 格式化货币金额
+ * 格式化货币金额（保留用于兼容，但显示为分钟）
  */
 export function formatCurrency(amount: number, showSign = false): string {
-  const formatted = Math.abs(amount).toLocaleString('zh-CN', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+  // 处理 undefined、null、NaN 的情况
+  const safeAmount = (amount === undefined || amount === null || isNaN(amount)) ? 0 : amount;
+  
+  const formatted = Math.abs(safeAmount).toLocaleString('zh-CN', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   });
   
   if (showSign) {
-    return amount >= 0 ? `+¥${formatted}` : `-¥${formatted}`;
+    return safeAmount >= 0 ? `+${formatted} 分钟` : `-${formatted} 分钟`;
   }
-  return `¥${formatted}`;
+  return `${formatted} 分钟`;
 }
 
 /**
- * 格式化交易金额（带符号）
+ * 格式化运动时长（带符号）
  */
 export function formatTransactionAmount(amount: number, type: 'income' | 'expense'): string {
-  const formatted = Math.abs(amount).toLocaleString('zh-CN', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+  // 处理 undefined、null、NaN 的情况
+  const safeAmount = (amount === undefined || amount === null || isNaN(amount)) ? 0 : amount;
+  
+  const formatted = Math.abs(safeAmount).toLocaleString('zh-CN', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   });
-  return type === 'income' ? `+${formatted}` : `-${formatted}`;
+  return `${formatted} 分钟`;
 }
 
 /**

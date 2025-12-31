@@ -1,7 +1,7 @@
 // 基于 HTTP API 的 InsForge 客户端实现
 
 // 使用环境变量配置 InsForge 连接
-const baseUrl = process.env.EXPO_PUBLIC_INSFORGE_BASE_URL || 'https://2v6spnc7.us-west.insforge.app';
+const baseUrl = process.env.EXPO_PUBLIC_INSFORGE_BASE_URL || 'https://zrqg6y6j.us-west.insforge.app';
 const anonKey = process.env.EXPO_PUBLIC_INSFORGE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3OC0xMjM0LTU2NzgtOTBhYi1jZGVmMTIzNDU2NzgiLCJlbWFpbCI6ImFub25AaW5zZm9yZ2UuY29tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY2Njc4NDZ9.uVjGPWXdBruie4yjltrdzy_xzAWu6gcu2Sf31EtPmTw';
 
 console.log('使用 InsForge 客户端（直接 HTTP API）');

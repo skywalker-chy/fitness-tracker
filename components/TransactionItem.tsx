@@ -5,7 +5,7 @@ import { getCategoryByName } from '@/utils/categories';
 import { formatRelativeDate, formatTransactionAmount } from '@/utils/format';
 import * as LucideIcons from 'lucide-react-native';
 import React, { useState } from 'react';
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface TransactionItemProps {
   transaction: Transaction;
@@ -27,9 +27,10 @@ export function TransactionItem({
   const [showMenu, setShowMenu] = useState(false);
   const category = getCategoryByName(transaction.category, transaction.type);
 
-  // 动态获取图标组件
+  // 动态获取图标组件 - 添加安全检查
+  const iconName = transaction.category_icon || 'circle';
   const IconComponent = (LucideIcons as any)[
-    transaction.category_icon
+    iconName
       .split('-')
       .map((s: string, i: number) => i === 0 ? s : s.charAt(0).toUpperCase() + s.slice(1))
       .join('')
@@ -41,6 +42,15 @@ export function TransactionItem({
     }
   };
 
+  // 点击处理：如果有 onPress 则执行，否则显示菜单
+  const handlePress = () => {
+    if (onPress) {
+      onPress();
+    } else if (showActions) {
+      setShowMenu(true);
+    }
+  };
+
   const handleEdit = () => {
     setShowMenu(false);
     onEdit?.(transaction);
@@ -48,9 +58,19 @@ export function TransactionItem({
 
   const handleDelete = () => {
     setShowMenu(false);
+    
+    // Web 端使用 window.confirm
+    if (Platform.OS === 'web') {
+      if (window.confirm('确定要删除这条运动记录吗？此操作不可撤销。')) {
+        onDelete?.(transaction.id);
+      }
+      return;
+    }
+    
+    // 原生端使用 Alert
     Alert.alert(
       '确认删除',
-      '确定要删除这笔交易记录吗？此操作不可撤销。',
+      '确定要删除这条运动记录吗？此操作不可撤销。',
       [
         { text: '取消', style: 'cancel' },
         {
@@ -66,7 +86,7 @@ export function TransactionItem({
     <View>
       <TouchableOpacity
         style={styles.container}
-        onPress={onPress}
+        onPress={handlePress}
         onLongPress={handleLongPress}
         activeOpacity={0.7}
       >

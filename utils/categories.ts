@@ -1,35 +1,35 @@
-// 支出类别配置
+// 运动类型配置（对应原支出类别）
 export const EXPENSE_CATEGORIES = [
-  { name: '餐饮', icon: 'utensils', color: '#F472B6' },
-  { name: '交通', icon: 'car', color: '#60A5FA' },
-  { name: '购物', icon: 'shopping-bag', color: '#FBBF24' },
-  { name: '居家', icon: 'home', color: '#34D399' },
-  { name: '娱乐', icon: 'gamepad-2', color: '#A78BFA' },
-  { name: '医疗', icon: 'heart-pulse', color: '#F87171' },
-  { name: '教育', icon: 'graduation-cap', color: '#38BDF8' },
-  { name: '水电', icon: 'zap', color: '#FB923C' },
-  { name: '通讯', icon: 'phone', color: '#4ADE80' },
+  { name: '跑步', icon: 'footprints', color: '#F472B6' },
+  { name: '力量训练', icon: 'dumbbell', color: '#60A5FA' },
+  { name: '游泳', icon: 'waves', color: '#38BDF8' },
+  { name: '瑜伽', icon: 'flower-2', color: '#34D399' },
+  { name: '骑行', icon: 'bike', color: '#A78BFA' },
+  { name: '篮球', icon: 'circle-dot', color: '#FB923C' },
+  { name: '足球', icon: 'circle', color: '#4ADE80' },
+  { name: '羽毛球', icon: 'wind', color: '#FBBF24' },
+  { name: '登山', icon: 'mountain', color: '#F87171' },
   { name: '其他', icon: 'more-horizontal', color: '#9CA3AF' },
 ] as const;
 
-// 收入类别配置
+// 身体部位/训练目标配置（对应原收入类别）
 export const INCOME_CATEGORIES = [
-  { name: '工资', icon: 'briefcase', color: '#4CAF50' },
-  { name: '奖金', icon: 'gift', color: '#FBBF24' },
-  { name: '投资', icon: 'trending-up', color: '#60A5FA' },
-  { name: '兼职', icon: 'laptop', color: '#A78BFA' },
-  { name: '红包', icon: 'wallet', color: '#F472B6' },
-  { name: '其他', icon: 'more-horizontal', color: '#9CA3AF' },
+  { name: '全身', icon: 'person-standing', color: '#4CAF50' },
+  { name: '上肢', icon: 'hand', color: '#60A5FA' },
+  { name: '下肢', icon: 'footprints', color: '#FBBF24' },
+  { name: '核心', icon: 'target', color: '#A78BFA' },
+  { name: '有氧', icon: 'heart-pulse', color: '#F472B6' },
+  { name: '拉伸', icon: 'move', color: '#9CA3AF' },
 ] as const;
 
-// 账户图标配置
+// 健身计划图标配置（对应原账户图标）
 export const ACCOUNT_ICONS = [
-  { name: 'wallet', label: '钱包', color: '#60A5FA' },
-  { name: 'credit-card', label: '银行卡', color: '#818CF8' },
-  { name: 'banknote', label: '现金', color: '#34D399' },
-  { name: 'landmark', label: '银行', color: '#F472B6' },
-  { name: 'smartphone', label: '电子支付', color: '#FBBF24' },
-  { name: 'piggy-bank', label: '储蓄', color: '#F87171' },
+  { name: 'target', icon: 'Target', label: '目标', color: '#60A5FA' },
+  { name: 'trophy', icon: 'Trophy', label: '成就', color: '#FBBF24' },
+  { name: 'flame', icon: 'Flame', label: '燃脂', color: '#F87171' },
+  { name: 'dumbbell', icon: 'Dumbbell', label: '增肌', color: '#818CF8' },
+  { name: 'heart', icon: 'Heart', label: '健康', color: '#F472B6' },
+  { name: 'zap', icon: 'Zap', label: '能量', color: '#34D399' },
 ] as const;
 
 // 根据类别名获取类别信息

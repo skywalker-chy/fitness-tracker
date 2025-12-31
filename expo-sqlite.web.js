@@ -178,35 +178,15 @@ class MockDatabase {
     const stored = JSON.parse(localStorage.getItem(this.storageKey));
     
     // 简单的SQL解析来确定要返回的数据类型
-    if (sql.includes('accounts')) {
-      // 如果SQL包含WHERE子句，进行简单过滤
-      if (sql.includes('WHERE')) {
-        const whereClause = sql.split('WHERE')[1];
-        let results = [...stored.accounts];
-        
-        // 处理ID查询
-        if (whereClause.includes('id =')) {
-          const idMatch = whereClause.match(/id\s*=\s*(\d+)/);
-          if (idMatch) {
-            const id = parseInt(idMatch[1]);
-            results = results.filter(acc => acc.id == id);
-          }
-        }
-        
-        // 排序处理
-        if (sql.includes('ORDER BY')) {
-          if (sql.includes('created_at')) {
-            results = results.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-          }
-        }
-        
-        return results;
-      }
-      
-      // 默认排序
-      return [...stored.accounts].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-    } else if (sql.includes('transactions')) {
-      // 处理JOIN查询
+    // 重要：先检查 transactions，因为 JOIN 查询会同时包含两个表名
+    // 使用 FROM transactions 来准确判断主表
+    const isTransactionsQuery = sql.includes('FROM transactions') || 
+                                 (sql.includes('transactions') && !sql.includes('FROM accounts'));
+    const isAccountsQuery = sql.includes('FROM accounts') || 
+                            (sql.includes('accounts') && !sql.includes('transactions'));
+    
+    if (isTransactionsQuery) {
+      // 处理 transactions 查询（包括 JOIN 查询）
       let results = [...stored.transactions];
       
       // 如果SQL包含LEFT JOIN，需要连接账户信息
@@ -226,10 +206,11 @@ class MockDatabase {
         
         // 处理日期范围查询
         if (whereClause.includes('BETWEEN')) {
-          const dateMatch = whereClause.match(/'([^']+)'\s+AND\s+'([^']+)'/);
-          if (dateMatch) {
-            const startDate = new Date(dateMatch[1]);
-            const endDate = new Date(dateMatch[2]);
+          // 使用 params 中的日期参数
+          if (params.length >= 2) {
+            const startDate = new Date(params[0]);
+            const endDate = new Date(params[1]);
+            endDate.setHours(23, 59, 59, 999); // 设置为当天结束
             results = results.filter(t => {
               const transDate = new Date(t.date);
               return transDate >= startDate && transDate <= endDate;
@@ -238,52 +219,96 @@ class MockDatabase {
         }
         
         // 处理ID查询
-        if (whereClause.includes('id =')) {
-          const idMatch = whereClause.match(/id\s*=\s*(\d+)/);
-          if (idMatch) {
-            const id = parseInt(idMatch[1]);
+        if (whereClause.includes('t.id =') || whereClause.includes('id =')) {
+          const id = params[0];
+          if (id) {
             results = results.filter(t => t.id == id);
           }
         }
         
         // 处理类型过滤
         if (whereClause.includes('type =')) {
-          const typeMatch = whereClause.match(/type\s*=\s*'([^']+)'/);
-          if (typeMatch) {
-            const type = typeMatch[1];
+          const typeIndex = whereClause.includes('type = ?') ? 0 : -1;
+          if (typeIndex >= 0 && params[typeIndex]) {
+            const type = params[typeIndex];
             results = results.filter(t => t.type === type);
           }
         }
-        
-        // 处理account_id过滤
-        if (whereClause.includes('account_id =')) {
-          const accountIdMatch = whereClause.match(/account_id\s*=\s*(\d+)/);
-          if (accountIdMatch) {
-            const accountId = parseInt(accountIdMatch[1]);
-            results = results.filter(t => t.account_id == accountId);
+      }
+      
+      // 处理 GROUP BY（聚合查询）
+      if (sql.includes('GROUP BY type')) {
+        const grouped = {};
+        results.forEach(t => {
+          if (!grouped[t.type]) {
+            grouped[t.type] = { type: t.type, total: 0 };
           }
-        }
+          grouped[t.type].total += (t.amount || 0);
+        });
+        return Object.values(grouped);
+      }
+      
+      // 处理分类汇总
+      if (sql.includes('GROUP BY category')) {
+        const grouped = {};
+        results.forEach(t => {
+          if (!grouped[t.category]) {
+            grouped[t.category] = { 
+              category: t.category, 
+              category_icon: t.category_icon,
+              total: 0 
+            };
+          }
+          grouped[t.category].total += (t.amount || 0);
+        });
+        // 按 total 降序排序
+        return Object.values(grouped).sort((a, b) => b.total - a.total);
       }
       
       // 排序处理
       if (sql.includes('ORDER BY')) {
-        if (sql.includes('date') || sql.includes('created_at')) {
-          results = results.sort((a, b) => {
-            if (sql.includes('DESC')) {
-              return new Date(b.date || b.created_at) - new Date(a.date || a.created_at);
-            } else {
-              return new Date(a.date || a.created_at) - new Date(b.date || b.created_at);
-            }
-          });
+        if (sql.includes('date DESC')) {
+          results = results.sort((a, b) => new Date(b.date) - new Date(a.date));
         }
       }
       
-      // 限制结果数量
+      // 处理LIMIT
       if (sql.includes('LIMIT')) {
         const limitMatch = sql.match(/LIMIT\s+(\d+)/);
         if (limitMatch) {
           const limit = parseInt(limitMatch[1]);
           results = results.slice(0, limit);
+        }
+      }
+      
+      return results;
+    } else if (isAccountsQuery) {
+      // 处理 accounts 查询
+      let results = [...stored.accounts];
+      
+      // 如果SQL包含WHERE子句，进行简单过滤
+      if (sql.includes('WHERE')) {
+        const whereClause = sql.split('WHERE')[1];
+        
+        // 处理ID查询
+        if (whereClause.includes('id =')) {
+          const id = params[0];
+          if (id) {
+            results = results.filter(acc => acc.id == id);
+          }
+        }
+      }
+      
+      // 处理 SUM 聚合查询
+      if (sql.includes('SUM(balance)')) {
+        const total = results.reduce((sum, acc) => sum + (acc.balance || 0), 0);
+        return [{ total }];
+      }
+      
+      // 排序处理
+      if (sql.includes('ORDER BY')) {
+        if (sql.includes('created_at')) {
+          results = results.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         }
       }
       

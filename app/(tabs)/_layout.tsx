@@ -31,17 +31,17 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="stats"
+        name="ai-coach"
         options={{
-          title: '统计',
-          tabBarIcon: ({ color }) => <IconSymbol size={24} name="chart.bar.fill" color={color} />,
+          title: 'AI教练',
+          tabBarIcon: ({ color }) => <IconSymbol size={24} name="brain" color={color} />,
         }}
       />
       <Tabs.Screen
         name="wallet"
         options={{
-          title: '钱包',
-          tabBarIcon: ({ color }) => <IconSymbol size={24} name="wallet.pass.fill" color={color} />,
+          title: '计划',
+          tabBarIcon: ({ color }) => <IconSymbol size={24} name="target" color={color} />,
         }}
       />
       <Tabs.Screen
@@ -49,6 +49,12 @@ export default function TabLayout() {
         options={{
           title: '我的',
           tabBarIcon: ({ color }) => <IconSymbol size={24} name="person.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="stats"
+        options={{
+          href: null, // 隐藏此标签，通过首页图标访问
         }}
       />
     </Tabs>

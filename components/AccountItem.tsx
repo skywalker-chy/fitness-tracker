@@ -1,24 +1,23 @@
 import { Colors } from '@/constants/theme';
 import { Account } from '@/db/sqlite/schema';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { formatCurrency } from '@/utils/format';
-import { Banknote, ChevronRight, CreditCard, Edit3, Landmark, PiggyBank, Smartphone, Trash2, Wallet } from 'lucide-react-native';
+import { Target, Trophy, Flame, Dumbbell, Heart, Zap, ChevronRight, Edit3, Trash2 } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const ICON_MAP: Record<string, React.ComponentType<any>> = {
-  'wallet': Wallet,
-  'credit-card': CreditCard,
-  'banknote': Banknote,
-  'landmark': Landmark,
-  'smartphone': Smartphone,
-  'piggy-bank': PiggyBank,
-  'Wallet': Wallet,
-  'CreditCard': CreditCard,
-  'Banknote': Banknote,
-  'Landmark': Landmark,
-  'Smartphone': Smartphone,
-  'PiggyBank': PiggyBank,
+  'target': Target,
+  'trophy': Trophy,
+  'flame': Flame,
+  'dumbbell': Dumbbell,
+  'heart': Heart,
+  'zap': Zap,
+  'Target': Target,
+  'Trophy': Trophy,
+  'Flame': Flame,
+  'Dumbbell': Dumbbell,
+  'Heart': Heart,
+  'Zap': Zap,
 };
 
 interface AccountItemProps {
@@ -41,7 +40,7 @@ export function AccountItem({
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const [showMenu, setShowMenu] = useState(false);
-  const IconComponent = ICON_MAP[account.icon] || Wallet;
+  const IconComponent = ICON_MAP[account.icon] || Target;
 
   const handleLongPress = () => {
     if (showActions) {
@@ -56,26 +55,33 @@ export function AccountItem({
 
   const handleDelete = () => {
     setShowMenu(false);
-    Alert.alert(
-      '确认删除',
-      `确定要删除账户"${account.name}"吗？关联的交易记录也会被删除，此操作不可撤销。`,
-      [
-        { text: '取消', style: 'cancel' },
-        {
-          text: '删除',
-          style: 'destructive',
-          onPress: () => onDelete?.(account.id)
-        },
-      ]
-    );
+    // Web 端使用 window.confirm，移动端使用 Alert.alert
+    if (typeof window !== 'undefined' && window.confirm) {
+      const confirmed = window.confirm(`确定要删除训练计划"${account.name}"吗？关联的运动记录也会被删除，此操作不可撤销。`);
+      if (confirmed) {
+        onDelete?.(account.id);
+      }
+    } else {
+      Alert.alert(
+        '确认删除',
+        `确定要删除训练计划"${account.name}"吗？关联的运动记录也会被删除，此操作不可撤销。`,
+        [
+          { text: '取消', style: 'cancel' },
+          {
+            text: '删除',
+            style: 'destructive',
+            onPress: () => onDelete?.(account.id)
+          },
+        ]
+      );
+    }
   };
 
   return (
     <View>
       <TouchableOpacity
         style={[styles.container, { backgroundColor: colors.card }]}
-        onPress={onPress}
-        onLongPress={handleLongPress}
+        onPress={() => setShowMenu(!showMenu)}
         activeOpacity={0.7}
       >
         <View style={[styles.iconWrap, { backgroundColor: (account.color || '#60A5FA') + '20' }]}>
@@ -85,7 +91,7 @@ export function AccountItem({
         <View style={styles.info}>
           <Text style={[styles.name, { color: colors.text }]}>{account.name}</Text>
           <Text style={[styles.balance, { color: colors.textSecondary }]}>
-            {formatCurrency(account.balance)}
+            目标: {account.balance} 分钟/周
           </Text>
         </View>
 
@@ -93,23 +99,17 @@ export function AccountItem({
       </TouchableOpacity>
 
       {showMenu && (
-        <TouchableOpacity
-          style={styles.menuOverlay}
-          activeOpacity={1}
-          onPress={() => setShowMenu(false)}
-        >
-          <View style={[styles.actionMenu, { backgroundColor: colors.card }]}>
-            <TouchableOpacity style={styles.actionButton} onPress={handleEdit}>
-              <Edit3 size={18} color={colors.primary} />
-              <Text style={[styles.actionText, { color: colors.text }]}>编辑</Text>
-            </TouchableOpacity>
-            <View style={[styles.actionDivider, { backgroundColor: colors.border }]} />
-            <TouchableOpacity style={styles.actionButton} onPress={handleDelete}>
-              <Trash2 size={18} color={colors.expense} />
-              <Text style={[styles.actionText, { color: colors.expense }]}>删除</Text>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
+        <View style={[styles.actionMenu, { backgroundColor: colors.card, marginTop: 8, marginHorizontal: 0 }]}>
+          <TouchableOpacity style={styles.actionButton} onPress={handleEdit}>
+            <Edit3 size={18} color={colors.primary} />
+            <Text style={[styles.actionText, { color: colors.text }]}>编辑</Text>
+          </TouchableOpacity>
+          <View style={[styles.actionDivider, { backgroundColor: colors.border }]} />
+          <TouchableOpacity style={styles.actionButton} onPress={handleDelete}>
+            <Trash2 size={18} color={colors.expense} />
+            <Text style={[styles.actionText, { color: colors.expense }]}>删除</Text>
+          </TouchableOpacity>
+        </View>
       )}
     </View>
   );

@@ -21,7 +21,7 @@ export default function AddAccountScreen() {
   const [selectedIcon, setSelectedIcon] = useState(ACCOUNT_ICONS[0]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // 编辑模式下加载账户数据
+  // 编辑模式下加载训练计划数据
   useEffect(() => {
     if (isEditMode && id) {
       const account = accounts.find(a => a.id === parseInt(id));
@@ -36,7 +36,7 @@ export default function AddAccountScreen() {
 
   const handleSave = async () => {
     if (!name.trim()) {
-      Alert.alert('提示', '请输入账户名称');
+      Alert.alert('提示', '请输入计划名称');
       return;
     }
 
@@ -71,7 +71,7 @@ export default function AddAccountScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}><XIcon size={24} color={colors.text} /></TouchableOpacity>
-        <Text style={[styles.title, { color: colors.text }]}>{isEditMode ? '编辑账户' : '添加账户'}</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{isEditMode ? '编辑计划' : '添加训练计划'}</Text>
         <TouchableOpacity onPress={handleSave} disabled={isLoading}>
           <Text style={[styles.saveBtn, { color: isLoading ? colors.textSecondary : colors.primary }]}>
             {isLoading ? '...' : '保存'}
@@ -80,21 +80,21 @@ export default function AddAccountScreen() {
       </View>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={[styles.section, { backgroundColor: colors.card }]}>
-          <Text style={[styles.label, { color: colors.textSecondary }]}>账户名称</Text>
-          <TextInput style={[styles.input, { color: colors.text, borderColor: colors.border }]} placeholder="例如：现金、银行卡" placeholderTextColor={colors.textSecondary} value={name} onChangeText={setName} />
+          <Text style={[styles.label, { color: colors.textSecondary }]}>计划名称</Text>
+          <TextInput style={[styles.input, { color: colors.text, borderColor: colors.border }]} placeholder="例如：减脂计划、增肌计划" placeholderTextColor={colors.textSecondary} value={name} onChangeText={setName} />
         </View>
         <View style={[styles.section, { backgroundColor: colors.card }]}>
-          <Text style={[styles.label, { color: colors.textSecondary }]}>初始余额</Text>
+          <Text style={[styles.label, { color: colors.textSecondary }]}>目标时长（分钟/周）</Text>
           <View style={styles.balanceRow}>
-            <Text style={[styles.currency, { color: colors.primary }]}>¥</Text>
-            <TextInput style={[styles.balanceInput, { color: colors.text }]} placeholder="0.00" placeholderTextColor={colors.textSecondary} keyboardType="decimal-pad" value={balance} onChangeText={setBalance} />
+            <Text style={[styles.currency, { color: colors.primary }]}>🎯</Text>
+            <TextInput style={[styles.balanceInput, { color: colors.text }]} placeholder="0" placeholderTextColor={colors.textSecondary} keyboardType="decimal-pad" value={balance} onChangeText={setBalance} />
           </View>
         </View>
         <View style={[styles.section, { backgroundColor: colors.card }]}>
           <Text style={[styles.label, { color: colors.textSecondary }]}>选择图标</Text>
           <View style={styles.iconGrid}>
             {ACCOUNT_ICONS.map((item) => {
-              const IconComponent = (LucideIcons as any)[item.icon] || LucideIcons.Wallet;
+              const IconComponent = (LucideIcons as any)[item.icon] || LucideIcons.Target;
               const isSelected = selectedIcon.name === item.name;
               return (
                 <TouchableOpacity key={item.name} style={[styles.iconItem, isSelected && { backgroundColor: colors.primaryLight, borderColor: colors.primary }]} onPress={() => setSelectedIcon(item)}>

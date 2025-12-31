@@ -8,7 +8,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useAccountStore } from '@/store/useAccountStore';
 import { useTransactionStore } from '@/store/useTransactionStore';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { Bell, Search } from 'lucide-react-native';
+import { Bell, Search, BarChart3 } from 'lucide-react-native';
 import React, { useCallback } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -18,18 +18,28 @@ export default function HomeScreen() {
   const colors = Colors[colorScheme ?? 'light'];
   const router = useRouter();
 
-  const { totalBalance, fetchAccounts } = useAccountStore();
-  const { recentTransactions, income, expense, fetchRecentTransactions, fetchSummary, removeTransaction } = useTransactionStore();
+  const { fetchAccounts } = useAccountStore();
+  const { recentTransactions, expense, fetchRecentTransactions, fetchSummary, removeTransaction } = useTransactionStore();
 
   useFocusEffect(
     useCallback(() => {
       fetchAccounts();
       fetchRecentTransactions(5);
-      fetchSummary();
+      fetchSummary('week'); // 获取本周数据
     }, [])
   );
 
+  // 计算本周运动总时长（expense 是支出类型的运动记录总时长）
+  const totalWorkoutMinutes = expense;
+  // 计算训练次数
+  const workoutCount = recentTransactions.length;
+  // 估算消耗热量（假设每分钟消耗 5 千卡）
+  const caloriesBurned = Math.round(totalWorkoutMinutes * 5);
+
   const handleAddTransaction = () => router.push('/add-transaction');
+  const handleQuickInput = () => router.push('/quick-input');
+  const handleVoiceInput = () => router.push('/voice-input');
+  const handleCameraInput = () => router.push('/camera-input');
 
   const handleEditTransaction = (transaction: Transaction) => {
     router.push(`/add-transaction?id=${transaction.id}`);
@@ -37,7 +47,7 @@ export default function HomeScreen() {
 
   const handleDeleteTransaction = async (id: number) => {
     await removeTransaction(id);
-    fetchAccounts(); // 刷新账户余额
+    fetchAccounts(); // 刷新数据
   };
 
   return (
@@ -46,19 +56,21 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <View>
             <Text style={[styles.welcomeText, { color: colors.textSecondary }]}>欢迎回来</Text>
-            <Text style={[styles.titleText, { color: colors.text }]}>智能记账助手</Text>
+            <Text style={[styles.titleText, { color: colors.text }]}>健身记录助手</Text>
           </View>
           <View style={styles.headerIcons}>
-            <TouchableOpacity style={styles.iconButton}><Search size={24} color={colors.text} /></TouchableOpacity>
+            <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/stats')}>
+              <BarChart3 size={24} color={colors.primary} />
+            </TouchableOpacity>
             <TouchableOpacity style={styles.iconButton}><Bell size={24} color={colors.text} /></TouchableOpacity>
           </View>
         </View>
 
-        <BalanceCard totalBalance={totalBalance} income={income} expense={expense} />
+        <BalanceCard totalBalance={totalWorkoutMinutes} income={workoutCount} expense={caloriesBurned} />
 
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>最近账单</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>最近运动</Text>
             <TouchableOpacity><Text style={[styles.sectionLink, { color: colors.primary }]}>查看全部</Text></TouchableOpacity>
           </View>
           <View style={[styles.billCard, { backgroundColor: colors.card }]}>
@@ -72,12 +84,17 @@ export default function HomeScreen() {
                 />
               ))
             ) : (
-              <EmptyState title="暂无账单" description="点击右下角按钮即可创建第一笔账单记录" emoji="📝" />
+              <EmptyState title="暂无运动记录" description="点击右下角按钮开始记录你的第一次运动" emoji="🏃" />
             )}
           </View>
         </View>
       </ScrollView>
-      <FloatingActionButton onAddTransaction={handleAddTransaction} />
+      <FloatingActionButton
+        onAddTransaction={handleAddTransaction}
+        onQuickInput={handleQuickInput}
+        onVoiceInput={handleVoiceInput}
+        onCameraInput={handleCameraInput}
+      />
     </SafeAreaView>
   );
 }
