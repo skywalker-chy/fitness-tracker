@@ -67,18 +67,18 @@ async function initializeTables(): Promise<void> {
       return;
     }
     
-    // 尝试创建账户表
+    // 尝试创建计划表
     try {
-      await database.from('accounts').insert({
-        name: '临时测试账户',
+      await database.from('plan').insert({
+        name: '临时测试计划',
         balance: 0,
         icon: '💸',
         color: '#000000',
         created_at: new Date().toISOString()
       });
-      console.log('账户表已存在或创建成功');
+      console.log('计划表已存在或创建成功');
     } catch (error) {
-      console.error('检查账户表失败:', error);
+      console.error('检查计划表失败:', error);
     }
     
     // 尝试创建交易记录表
@@ -110,7 +110,7 @@ async function initializeTables(): Promise<void> {
 
 export async function getAllAccounts(): Promise<Account[]> {
   try {
-    return await database.from('accounts').select().order('created_at', 'desc').execute();
+    return await database.from('plan').select().order('created_at', 'desc').execute();
   } catch (error) {
     console.error('获取账户列表失败:', error);
     return [];
@@ -119,7 +119,7 @@ export async function getAllAccounts(): Promise<Account[]> {
 
 export async function getAccountById(id: number): Promise<Account | null> {
   try {
-    return await database.from('accounts').select().where('id', '=', id).single();
+    return await database.from('plan').select().where('id', '=', id).single();
   } catch (error) {
     console.error('获取账户失败:', error);
     return null;
@@ -128,7 +128,7 @@ export async function getAccountById(id: number): Promise<Account | null> {
 
 export async function createAccount(account: Omit<Account, 'id' | 'created_at'>): Promise<number> {
   try {
-    const result = await database.from('accounts').insert({
+    const result = await database.from('plan').insert({
       name: account.name,
       balance: account.balance,
       icon: account.icon,
@@ -144,7 +144,7 @@ export async function createAccount(account: Omit<Account, 'id' | 'created_at'>)
 
 export async function updateAccount(id: number, account: Partial<Account>): Promise<void> {
   try {
-    await database.from('accounts').where('id', '=', id).update(
+    await database.from('plan').where('id', '=', id).update(
       { ...account }
     );
   } catch (error) {
@@ -155,7 +155,7 @@ export async function updateAccount(id: number, account: Partial<Account>): Prom
 
 export async function deleteAccount(id: number): Promise<void> {
   try {
-    await database.from('accounts').where('id', '=', id).delete();
+    await database.from('plan').where('id', '=', id).delete();
   } catch (error) {
     console.error('删除账户失败:', error);
     throw error;
