@@ -5,7 +5,7 @@ node_modules/
 
 # Expo
 .expo/
-# dist/ # 允许上传 dist 用于 Netlify 部署
+dist/
 web-build/
 expo-env.d.ts
 
