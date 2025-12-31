@@ -202,7 +202,15 @@ class InsForgeDatabaseClient {
         // 重置查询状态
         reset();
         
-        return results;
+        // 确保返回数组格式（InsForge 可能返回 { data: [...] } 或直接数组）
+        if (Array.isArray(results)) {
+          return results;
+        } else if (results && Array.isArray(results.data)) {
+          return results.data;
+        } else if (results && typeof results === 'object') {
+          return [results];
+        }
+        return [];
       },
 
       // 获取单个结果

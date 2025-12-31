@@ -356,24 +356,37 @@ export async function deleteTransaction(id: number): Promise<void> {
 
 export async function getIncomeExpenseSummary(startDate?: string, endDate?: string): Promise<{ income: number; expense: number }> {
   try {
-    // 由于当前实现不支持group by，我们手动计算
-    const query = database.from('transactions').select();
-    
-    if (startDate && endDate) {
-      query.where('date', '>=', startDate).where('date', '<=', endDate);
-    }
-    
-    const transactions = await query.execute();
+    // 获取所有交易记录，然后在客户端过滤
+    const transactions = await database.from('transactions').select().execute();
     const summary = { income: 0, expense: 0 };
     
-    transactions.forEach(transaction => {
+    console.log('[getIncomeExpenseSummary] 获取到交易记录数:', transactions?.length || 0);
+    console.log('[getIncomeExpenseSummary] 日期范围:', startDate, '-', endDate);
+    
+    if (!Array.isArray(transactions)) {
+      console.log('[getIncomeExpenseSummary] 返回数据不是数组');
+      return summary;
+    }
+    
+    transactions.forEach((transaction: any) => {
+      // 如果有日期范围，进行过滤
+      if (startDate && endDate && transaction.date) {
+        const txDate = transaction.date.substring(0, 10); // 取 YYYY-MM-DD 部分
+        if (txDate < startDate || txDate > endDate) {
+          return; // 跳过不在范围内的记录
+        }
+      }
+      
+      console.log('[getIncomeExpenseSummary] 处理交易:', transaction.type, transaction.amount);
+      
       if (transaction.type === 'income') {
-        summary.income += transaction.amount || 0;
+        summary.income += Number(transaction.amount) || 0;
       } else if (transaction.type === 'expense') {
-        summary.expense += transaction.amount || 0;
+        summary.expense += Number(transaction.amount) || 0;
       }
     });
     
+    console.log('[getIncomeExpenseSummary] 计算结果:', summary);
     return summary;
   } catch (error) {
     console.error('获取收支汇总失败:', error);
