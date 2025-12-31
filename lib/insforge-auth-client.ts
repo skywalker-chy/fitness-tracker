@@ -241,14 +241,67 @@ class InsForgeAuthClient {
       throw new Error('Email and password are required');
     }
 
-    // 从 localStorage 加载用户
-    const storedUsers = getStoredUsers();
-    const userData = storedUsers.get(email);
+    // 首先尝试从 InsForge 数据库查询用户
+    let userData: StoredUser | undefined;
+    
+    try {
+      const url = `${BASE_URL}/api/database/records/users?email=eq.${encodeURIComponent(email)}`;
+      console.log('[LocalAuth] Checking user in InsForge:', url);
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${API_KEY}`,
+          'apikey': API_KEY,
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('[LocalAuth] InsForge response:', data);
+        
+        // 处理可能的数据格式
+        const users = Array.isArray(data) ? data : (data.data || []);
+        
+        if (users.length > 0) {
+          const dbUser = users[0];
+          // 验证密码
+          if (dbUser.password === password) {
+            userData = {
+              password: dbUser.password,
+              user: {
+                id: String(dbUser.id),
+                email: dbUser.email,
+                name: dbUser.name || email.split('@')[0],
+                avatar_url: undefined,
+                created_at: dbUser.createdat || new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              }
+            };
+            console.log('[LocalAuth] User found in InsForge:', userData.user.email);
+          } else {
+            throw new Error('Invalid password');
+          }
+        }
+      }
+    } catch (error: any) {
+      if (error.message === 'Invalid password') {
+        throw error;
+      }
+      console.log('[LocalAuth] InsForge query failed, trying localStorage:', error.message);
+    }
+    
+    // 如果 InsForge 没找到，尝试从 localStorage 加载（Web 端）
+    if (!userData) {
+      const storedUsers = getStoredUsers();
+      userData = storedUsers.get(email);
+    }
     
     if (!userData) {
       throw new Error('User not found. Please register first.');
     }
 
+    // 再次验证密码（针对 localStorage 的情况）
     if (userData.password !== password) {
       throw new Error('Invalid password');
     }
