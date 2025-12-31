@@ -2,7 +2,7 @@
 
 // 使用环境变量配置 InsForge 连接
 const baseUrl = process.env.EXPO_PUBLIC_INSFORGE_BASE_URL || 'https://zrqg6y6j.us-west.insforge.app';
-const anonKey = process.env.EXPO_PUBLIC_INSFORGE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3OC0xMjM0LTU2NzgtOTBhYi1jZGVmMTIzNDU2NzgiLCJlbWFpbCI6ImFub25AaW5zZm9yZ2UuY29tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY2Njc4NDZ9.uVjGPWXdBruie4yjltrdzy_xzAWu6gcu2Sf31EtPmTw';
+const apiKey = 'ik_39bb1da4b36fb9faef1047c398f44bf8';
 
 console.log('使用 InsForge 客户端（直接 HTTP API）');
 console.log('连接到:', baseUrl);
@@ -27,7 +27,9 @@ class InsForgeDatabaseClient {
     
     const defaultHeaders: HeadersInit = {
       'Authorization': `Bearer ${this.anonKey}`,
-      'Content-Type': 'application/json'
+      'apikey': this.anonKey,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation'
     };
 
     try {
@@ -64,7 +66,7 @@ class InsForgeDatabaseClient {
     try {
       console.log('检查表列表...');
       // 尝试检查 plan 表是否存在
-      await this.request(`/plan`);
+      await this.request(`/api/database/records/plan`);
       console.log('plan 表存在');
       return [{ name: 'plan' }];
     } catch (error) {
@@ -194,7 +196,7 @@ class InsForgeDatabaseClient {
         // 构建查询参数
         const params = buildQueryParams();
         
-        const results = await self.request(`/${tableName}?${params}`);
+        const results = await self.request(`/api/database/records/${tableName}?${params}`);
         console.log('查询结果:', results);
         
         // 重置查询状态
@@ -215,13 +217,14 @@ class InsForgeDatabaseClient {
         console.log(`执行 insert 操作 (表: ${tableName})`);
         console.log('插入数据:', data);
         
-        const result = await self.request(`/${tableName}`, {
+        const result = await self.request(`/api/database/records/${tableName}`, {
           method: 'POST',
           body: JSON.stringify(data)
         });
         
         console.log('插入结果:', result);
-        return result;
+        // 确保返回数组格式
+        return Array.isArray(result) ? result : [result];
       },
 
       // 实现 update 操作
@@ -233,7 +236,7 @@ class InsForgeDatabaseClient {
         // 构建查询参数
         const params = buildQueryParams();
         
-        const result = await self.request(`/${tableName}?${params}`, {
+        const result = await self.request(`/api/database/records/${tableName}?${params}`, {
           method: 'PATCH',
           body: JSON.stringify(data)
         });
@@ -254,7 +257,7 @@ class InsForgeDatabaseClient {
         // 构建查询参数
         const params = buildQueryParams();
         
-        const result = await self.request(`/${tableName}?${params}`, {
+        const result = await self.request(`/api/database/records/${tableName}?${params}`, {
           method: 'DELETE'
         });
         
@@ -270,6 +273,6 @@ class InsForgeDatabaseClient {
 }
 
 // 创建并导出 InsForge 客户端实例
-const database = new InsForgeDatabaseClient(baseUrl, anonKey);
+const database = new InsForgeDatabaseClient(baseUrl, apiKey);
 
 export default database;
